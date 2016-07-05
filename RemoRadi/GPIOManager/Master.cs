@@ -39,21 +39,28 @@ namespace ShimadzuGPIO
             _timer = new Timer(
                 (sender) =>
                 {
-                    if(_pinvalue == GpioPinValue.High)
+                    if (null == _changeAction)
                     {
-                        _pinvalue = GpioPinValue.Low;
-                        _pin.Write(_pinvalue);
+                        if (_pinvalue == GpioPinValue.High)
+                        {
+                            _pinvalue = GpioPinValue.Low;
+                            _pin.Write(_pinvalue);
+                        }
+                        else
+                        {
+                            _pinvalue = GpioPinValue.High;
+                            _pin.Write(_pinvalue);
+                        }
+
+                        if (null != Tick)
+                        {
+                            Tick(null, null);
+                        }
                     }
                     else
                     {
-                        _pinvalue = GpioPinValue.High;
-                        _pin.Write(_pinvalue);
-                    }
-
-                    if (null != Tick)
-                    {
-                        Tick(null, null);
-                    }
+                        _changeAction();
+                    }                    
                 },
                 null, Timeout.Infinite, Timeout.Infinite);
         }
@@ -83,6 +90,8 @@ namespace ShimadzuGPIO
 
         private int _current_interval = 1000;
 
+        private Action _changeAction = null;
+
         /// <summary>
         /// tは加速度の値
         /// </summary>
@@ -94,7 +103,11 @@ namespace ShimadzuGPIO
                 if(1000 != _current_interval)
                 {
                     _current_interval = 1000;
-                    this.Change(_current_interval);
+                    _changeAction = new Action(() =>
+                    {
+                        this.Change(_current_interval);
+                        _changeAction = null;
+                    });
                 }
             }
             else if(0.2 <= t && t < 0.4)
@@ -102,7 +115,11 @@ namespace ShimadzuGPIO
                 if (770 != _current_interval)
                 {
                     _current_interval = 770;
-                    this.Change(_current_interval);
+                    _changeAction = new Action(() =>
+                    {
+                        this.Change(_current_interval);
+                        _changeAction = null;
+                    });
                 }
             }
             else if(0.4 <= t && t < 0.6)
@@ -110,7 +127,11 @@ namespace ShimadzuGPIO
                 if (530 != _current_interval)
                 {
                     _current_interval = 530;
-                    this.Change(_current_interval);
+                    _changeAction = new Action(() =>
+                    {
+                        this.Change(_current_interval);
+                        _changeAction = null;
+                    });
                 }
             }
             else if(0.6 <= t && t < 0.8)
@@ -118,7 +139,11 @@ namespace ShimadzuGPIO
                 if (290 != _current_interval)
                 {
                     _current_interval = 290;
-                    this.Change(_current_interval);
+                    _changeAction = new Action(() =>
+                    {
+                        this.Change(_current_interval);
+                        _changeAction = null;
+                    });
                 }
             }
             else if(0.8 <= t && t <= 1.0)
@@ -126,7 +151,11 @@ namespace ShimadzuGPIO
                 if (50 != _current_interval)
                 {
                     _current_interval = 50;
-                    this.Change(_current_interval);
+                    _changeAction = new Action(() =>
+                    {
+                        this.Change(_current_interval);
+                        _changeAction = null;
+                    });
                 }
             }
         }
