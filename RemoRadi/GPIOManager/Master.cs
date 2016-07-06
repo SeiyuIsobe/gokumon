@@ -62,7 +62,7 @@ namespace ShimadzuGPIO
                         _changeAction();
                     }                    
                 },
-                null, Timeout.Infinite, Timeout.Infinite);
+                null, 1000, 1000);
         }
 
         public void Start(int t)
