@@ -61,7 +61,7 @@ namespace RemoChassis
                         });
                 };
                 _gpio.InitGPIO();
-                _gpio.Start(); // タイマー生成しただけで動いていない
+                //_gpio.Start(); // タイマー生成しただけで動いていない
             }
 
             _iot = new AccelerIoT();

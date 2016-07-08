@@ -41,17 +41,28 @@ namespace ShimadzuGPIO
                 {
                     if (null == _changeAction)
                     {
-                        if (_pinvalue == GpioPinValue.High)
+                        if(null == _lowAction)
                         {
-                            _pinvalue = GpioPinValue.Low;
+                            // High
+                            _pinvalue = GpioPinValue.High;
                             _pin.Write(_pinvalue);
+
+                            // Low
+                            _lowAction = new Action(() =>
+                            {
+                                _pinvalue = GpioPinValue.Low;
+                                _pin.Write(_pinvalue);
+
+                                _lowAction = null;
+                            });
+
                         }
                         else
                         {
-                            _pinvalue = GpioPinValue.High;
-                            _pin.Write(_pinvalue);
+                            _lowAction();
                         }
 
+                        
                         if (null != Tick)
                         {
                             Tick(null, null);
@@ -60,9 +71,9 @@ namespace ShimadzuGPIO
                     else
                     {
                         _changeAction();
-                    }                    
+                    }
                 },
-                null, 1000, 1000);
+                null, 0, 0);
         }
 
         public void Start(int t)
@@ -91,6 +102,7 @@ namespace ShimadzuGPIO
         private int _current_interval = 1000;
 
         private Action _changeAction = null;
+        private Action _lowAction = null;
 
         /// <summary>
         /// tは加速度の値
@@ -157,6 +169,11 @@ namespace ShimadzuGPIO
                         _changeAction = null;
                     });
                 }
+            }
+
+            if (null == _timer)
+            {
+                this.Start();
             }
         }
     }
