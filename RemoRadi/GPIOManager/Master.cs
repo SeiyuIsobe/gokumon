@@ -33,6 +33,7 @@ namespace ShimadzuGPIO
         }
 
         private Timer _timer = null;
+        private Timer _pwmTimer = null;
 
         public void Start()
         {
@@ -41,28 +42,25 @@ namespace ShimadzuGPIO
                 {
                     if (null == _changeAction)
                     {
-                        if(null == _lowAction)
-                        {
-                            // High
-                            _pinvalue = GpioPinValue.High;
-                            _pin.Write(_pinvalue);
+                        // High
+                        _pinvalue = GpioPinValue.High;
+                        _pin.Write(_pinvalue);
 
-                            // Low
-                            _lowAction = new Action(() =>
+                        // PWM
+                        _pwmTimer = new Timer(
+                            (ss) =>
                             {
-                                _pinvalue = GpioPinValue.Low;
-                                _pin.Write(_pinvalue);
+                                if(null != _pwmTimer)
+                                {
+                                    _pinvalue = GpioPinValue.Low;
+                                    _pin.Write(_pinvalue);
+                                    _pwmTimer = null; // nullにして2回目を拾わないようにする
+                                }
+                                
+                            },
+                            null, 50, Timeout.Infinite);
 
-                                _lowAction = null;
-                            });
 
-                        }
-                        else
-                        {
-                            _lowAction();
-                        }
-
-                        
                         if (null != Tick)
                         {
                             Tick(null, null);
@@ -102,7 +100,6 @@ namespace ShimadzuGPIO
         private int _current_interval = 1000;
 
         private Action _changeAction = null;
-        private Action _lowAction = null;
 
         /// <summary>
         /// tは加速度の値
@@ -126,7 +123,7 @@ namespace ShimadzuGPIO
             {
                 if (770 != _current_interval)
                 {
-                    _current_interval = 770;
+                    _current_interval = 750;
                     _changeAction = new Action(() =>
                     {
                         this.Change(_current_interval);
@@ -138,7 +135,7 @@ namespace ShimadzuGPIO
             {
                 if (530 != _current_interval)
                 {
-                    _current_interval = 530;
+                    _current_interval = 550;
                     _changeAction = new Action(() =>
                     {
                         this.Change(_current_interval);
@@ -150,7 +147,7 @@ namespace ShimadzuGPIO
             {
                 if (290 != _current_interval)
                 {
-                    _current_interval = 290;
+                    _current_interval = 325;
                     _changeAction = new Action(() =>
                     {
                         this.Change(_current_interval);
@@ -162,7 +159,7 @@ namespace ShimadzuGPIO
             {
                 if (50 != _current_interval)
                 {
-                    _current_interval = 50;
+                    _current_interval = 100;
                     _changeAction = new Action(() =>
                     {
                         this.Change(_current_interval);
