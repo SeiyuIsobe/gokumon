@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -16,6 +18,33 @@ namespace ShimadzuGPIO
 
         public event EventHandler Tick;
 
+        public Master()
+        {
+            this.HighTick += (sender, e) =>
+            {
+                // High
+                _pinvalue = GpioPinValue.High;
+                _pin.Write(_pinvalue);
+
+                if (null != Tick)
+                {
+                    Tick(null, new EventArgs());
+                }
+            };
+
+            this.LowTick += (sender, e) =>
+            {
+                // Low
+                _pinvalue = GpioPinValue.Low;
+                _pin.Write(_pinvalue);
+
+                if (null != Tick)
+                {
+                    Tick(null, null);
+                }
+            };
+        }
+
         public void InitGPIO()
         {
             var gpio = GpioController.GetDefault();
@@ -30,76 +59,116 @@ namespace ShimadzuGPIO
             _pin.Write(GpioPinValue.High);
             _pin.SetDriveMode(GpioPinDriveMode.Output);
             _pinvalue = GpioPinValue.High;
+
+            // ストップウォッチ
+            _stopwatch = new Stopwatch();
         }
 
-        private Timer _timer = null;
-        private Timer _pwmTimer = null;
+        private Stopwatch _stopwatch = null;
+        private BackgroundWorker _worker = null;
+
+        private event EventHandler HighTick;
+        private event EventHandler LowTick;
 
         public void Start()
         {
-            _timer = new Timer(
-                (sender) =>
+            if(null == _worker)
+            {
+                _worker = new BackgroundWorker();
+                _worker.DoWork += (sender, e) =>
                 {
-                    if (null == _changeAction)
+                    _stopwatch.Start();
+
+                    bool isHigh = false;
+
+                    while(true)
                     {
-                        // High
-                        _pinvalue = GpioPinValue.High;
-                        _pin.Write(_pinvalue);
-
-                        // PWM
-                        _pwmTimer = new Timer(
-                            (ss) =>
-                            {
-                                if(null != _pwmTimer)
-                                {
-                                    _pinvalue = GpioPinValue.Low;
-                                    _pin.Write(_pinvalue);
-                                    _pwmTimer = null; // nullにして2回目を拾わないようにする
-                                }
-                                
-                            },
-                            null, 50, Timeout.Infinite);
-
-
-                        if (null != Tick)
+                        // 間隔経過
+                        if(_current_interval <= _stopwatch.ElapsedMilliseconds)
                         {
-                            Tick(null, null);
+                            _stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+                            HighTick(null, null);
+                            isHigh = true;
+                        }
+                        else if(20 <= _stopwatch.ElapsedMilliseconds)
+                        {
+                            if(true == isHigh)
+                            {
+                                LowTick(null, null);
+                                isHigh = false;
+                            }
                         }
                     }
-                    else
-                    {
-                        _changeAction();
-                    }
-                },
-                null, 0, 0);
+                };
+                _worker.RunWorkerAsync();
+            }
+            
         }
 
-        public void Start(int t)
-        {
-            _timer = new Timer(
-                (sender) =>
-                {
-                    if(null != Tick)
-                    {
-                        Tick(null, null);
-                    }
-                },
-                null, 0, t);
-        }
+        #region
+        //public void Start()
+        //{
+        //    _timer = new Timer(
+        //        (sender) =>
+        //        {
+        //            if (null == _changeAction)
+        //            {
+        //                // High
+        //                _pinvalue = GpioPinValue.High;
+        //                _pin.Write(_pinvalue);
 
-        public void Change(int t)
-        {
-            _timer.Change(0, t);
-        }
+        //                // PWM
+        //                _pwmTimer = new Timer(
+        //                    (ss) =>
+        //                    {
+        //                        if (null != _pwmTimer)
+        //                        {
+        //                            _pinvalue = GpioPinValue.Low;
+        //                            _pin.Write(_pinvalue);
+        //                            _pwmTimer = null; // nullにして2回目を拾わないようにする
+        //                        }
+
+        //                    },
+        //                    null, 50, Timeout.Infinite);
+
+
+        //                if (null != Tick)
+        //                {
+        //                    Tick(null, null);
+        //                }
+        //            }
+        //            else
+        //            {
+        //                _changeAction();
+        //            }
+        //        },
+        //        null, 0, 0);
+        //}
+
+        //public void Start(int t)
+        //{
+        //    _timer = new Timer(
+        //        (sender) =>
+        //        {
+        //            if (null != Tick)
+        //            {
+        //                Tick(null, null);
+        //            }
+        //        },
+        //        null, 0, t);
+        //}
+        #endregion
+
 
         public void Stop()
         {
-            _timer.Change(Timeout.Infinite, Timeout.Infinite);
+            _worker.CancelAsync();
+            _worker.Dispose();
+            _worker = null;
         }
 
         private int _current_interval = 1000;
-
-        private Action _changeAction = null;
 
         /// <summary>
         /// tは加速度の値
@@ -111,12 +180,7 @@ namespace ShimadzuGPIO
             {
                 if(1000 != _current_interval)
                 {
-                    _current_interval = 1000;
-                    _changeAction = new Action(() =>
-                    {
-                        this.Change(_current_interval);
-                        _changeAction = null;
-                    });
+                    _current_interval = 3000;
                 }
             }
             else if(0.2 <= t && t < 0.4)
@@ -124,11 +188,6 @@ namespace ShimadzuGPIO
                 if (770 != _current_interval)
                 {
                     _current_interval = 750;
-                    _changeAction = new Action(() =>
-                    {
-                        this.Change(_current_interval);
-                        _changeAction = null;
-                    });
                 }
             }
             else if(0.4 <= t && t < 0.6)
@@ -136,11 +195,6 @@ namespace ShimadzuGPIO
                 if (530 != _current_interval)
                 {
                     _current_interval = 550;
-                    _changeAction = new Action(() =>
-                    {
-                        this.Change(_current_interval);
-                        _changeAction = null;
-                    });
                 }
             }
             else if(0.6 <= t && t < 0.8)
@@ -148,11 +202,6 @@ namespace ShimadzuGPIO
                 if (290 != _current_interval)
                 {
                     _current_interval = 325;
-                    _changeAction = new Action(() =>
-                    {
-                        this.Change(_current_interval);
-                        _changeAction = null;
-                    });
                 }
             }
             else if(0.8 <= t && t <= 1.0)
@@ -160,15 +209,10 @@ namespace ShimadzuGPIO
                 if (50 != _current_interval)
                 {
                     _current_interval = 100;
-                    _changeAction = new Action(() =>
-                    {
-                        this.Change(_current_interval);
-                        _changeAction = null;
-                    });
                 }
             }
 
-            if (null == _timer)
+            if (null == _worker)
             {
                 this.Start();
             }

@@ -50,18 +50,17 @@ namespace RemoChassis
                     await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
                         () =>
                         {
-                            if(_ell.Visibility == Visibility.Visible)
+                            if(null != ee)
                             {
-                                _ell.Visibility = Visibility.Collapsed;
+                                _ell.Visibility = Visibility.Visible;
                             }
                             else
                             {
-                                _ell.Visibility = Visibility.Visible;
+                                _ell.Visibility = Visibility.Collapsed;
                             }
                         });
                 };
                 _gpio.InitGPIO();
-                //_gpio.Start(); // タイマー生成しただけで動いていない
             }
 
             _iot = new AccelerIoT();

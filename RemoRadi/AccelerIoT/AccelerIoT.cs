@@ -42,7 +42,7 @@ namespace ShimadzuIoT
 
         private void MessageClosed(IWebSocket sender, WebSocketClosedEventArgs args)
         {
-            throw new NotImplementedException();
+            NotifyConnect();
         }
 
         private void MessageReceived(MessageWebSocket sender, MessageWebSocketMessageReceivedEventArgs args)
@@ -65,16 +65,24 @@ namespace ShimadzuIoT
             }
             catch
             {
-                if (null != TryConnect)
+                NotifyConnect();
+            }
+
+
+        }
+
+        private void NotifyConnect()
+        {
+            if (null != TryConnect)
+            {
+                if (null != _ws)
                 {
                     _ws.Dispose();
                     _ws = null;
-
-                    TryConnect(null, null);
                 }
-            }
-            
 
+                TryConnect(null, null);
+            }
         }
 
         private Acceler _acceler = null;
