@@ -13,6 +13,22 @@
             <Button x:Name="button" Content="Button" HorizontalAlignment="Left" VerticalAlignment="Top" Click="button_Click"/>
             <TextBlock Text="{Binding AccelerZ}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
             <Ellipse Fill="Aqua" Height="50" Width="50" x:Name="_ell"/>
+            <CaptureElement x:Name="_camera" MaxWidth="160" MaxHeight="160" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <CaptureElement.RenderTransform>
+                    <TransformGroup>
+                        <!--<RotateTransform Angle="90"/>-->
+                        <TranslateTransform X="0" Y="0" x:Name="_transTrans"/>
+                    </TransformGroup>
+                </CaptureElement.RenderTransform>
+            </CaptureElement>
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="モータードライブテスト"/>
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="_pinInit" Content="初期化" HorizontalAlignment="Left" VerticalAlignment="Top" Click="_pinInit_Click"/>
+                    <Button x:Name="_pin5button" Content="Low" HorizontalAlignment="Left" VerticalAlignment="Top" Click="_pin5button_Click" Margin="3,0,0,0" IsEnabled="False"/>
+                    <Button x:Name="_pin6button" Content="Low" HorizontalAlignment="Left" VerticalAlignment="Top" Click="_pin6button_Click" Margin="3,0,0,0" IsEnabled="False"/>
+                </StackPanel>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Page>

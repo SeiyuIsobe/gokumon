@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Media.Capture;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -81,7 +82,27 @@ namespace RemoChassis
 
             _iot.Start();
 
+            // カメラ
+            UseCamera();
+
             button.IsEnabled = false;
+        }
+
+        private MediaCapture _captureMgr = null;
+
+        private async void UseCamera()
+        {
+            // カメラの準備
+            if (null == _captureMgr)
+            {
+                _captureMgr = new MediaCapture();
+                await _captureMgr.InitializeAsync();
+
+                _camera.Source = _captureMgr;
+            }
+
+            await _captureMgr.StartPreviewAsync();
+            
         }
 
         private double _accelerX = 0.0;
@@ -123,6 +144,29 @@ namespace RemoChassis
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             }
+        }
+
+        private void _pin5button_Click(object sender, RoutedEventArgs e)
+        {
+            int ret = _gpio.WritePin(5);
+
+            _pin5button.Content = ret == 1 ? "High" : "Low";
+        }
+
+        private void _pin6button_Click(object sender, RoutedEventArgs e)
+        {
+            int ret = _gpio.WritePin(6);
+
+            _pin6button.Content = ret == 1 ? "High" : "Low";
+        }
+
+        private void _pinInit_Click(object sender, RoutedEventArgs e)
+        {
+            _gpio = new Master();
+            _gpio.InitGPIO_5_6();
+
+            _pin5button.IsEnabled = true;
+            _pin6button.IsEnabled = true;
         }
     }
 }

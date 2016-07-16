@@ -3,3 +3,10 @@
 ################################################################################
 
 /RemoRadi/AccelerIoT/bin
+/RemoRadi/AccelerIoT/obj
+/RemoRadi/DzuoolIoT/bin
+/RemoRadi/DzuoolIoT/obj
+/RemoRadi/GPIOManager/obj
+/RemoRadi/GPIOManager/bin
+/RemoRadi/RemoChassis/obj
+/RemoRadi/RemoChassis/bin
