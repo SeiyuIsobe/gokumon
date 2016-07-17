@@ -43,26 +43,55 @@ namespace RemoChassis
 
         private void button_Click(object sender, RoutedEventArgs e)
         {
-            if (null == _gpio)
+            _gpioPwmPin5 = new GpioPwm(5);
+            _gpioPwmPin5.HighTick += async (ss, ee) =>
             {
-                _gpio = new Master();
-                _gpio.Tick += async (ss, ee) =>
-                {
-                    await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
-                        () =>
-                        {
-                            if(null != ee)
-                            {
-                                _ell.Visibility = Visibility.Visible;
-                            }
-                            else
-                            {
-                                _ell.Visibility = Visibility.Collapsed;
-                            }
-                        });
-                };
-                _gpio.InitGPIO();
+                await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+                    () =>
+                    {
+                        _ell.Visibility = Visibility.Visible;
+                    });
+            };
+            _gpioPwmPin5.LowTick += async (ss, ee) =>
+            {
+                await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+                    () =>
+                    {
+                        _ell.Visibility = Visibility.Collapsed;
+                    });
+            };
+
+            try
+            {
+                _gpioPwmPin5.Initialize();
+                
             }
+            catch
+            { }
+
+            _gpioPwmPin5.Start();
+
+
+            //if (null == _gpio)
+            //{
+            //    _gpio = new Master();
+            //    _gpio.Tick += async (ss, ee) =>
+            //    {
+            //        await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+            //            () =>
+            //            {
+            //                if(null != ee)
+            //                {
+            //                    _ell.Visibility = Visibility.Visible;
+            //                }
+            //                else
+            //                {
+            //                    _ell.Visibility = Visibility.Collapsed;
+            //                }
+            //            });
+            //    };
+            //    _gpio.InitGPIO();
+            //}
 
             _iot = new AccelerIoT();
             _iot.WsUri = "ws://sukekiyo.mybluemix.net/ws/accera";
@@ -183,6 +212,11 @@ namespace RemoChassis
                 _gpioPwmPin5.WriteLow();
             };
             _gpioPwmPin5.Start();
+        }
+
+        private void _chgButton_Click(object sender, RoutedEventArgs e)
+        {
+            _gpioPwmPin5.Change(-0.9);
         }
     }
 }

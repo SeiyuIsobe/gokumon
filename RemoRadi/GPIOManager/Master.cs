@@ -147,7 +147,7 @@ namespace ShimadzuGPIO
         /// tは加速度の値
         /// </summary>
         /// <param name="t"></param>
-        public void Change(double t)
+        public virtual void Change(double t)
         {
             if (0.0 <= t && t < 0.2)
             {
@@ -247,6 +247,7 @@ namespace ShimadzuGPIO
 
         protected void WritePin(GpioPinValue value)
         {
+            if (null == _pin) return;
             if(_pin.Read() != value)
             {
                 _pin.Write(value);

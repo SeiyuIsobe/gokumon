@@ -16,17 +16,27 @@ namespace ShimadzuGPIO
         public event EventHandler HighTick;
         public event EventHandler LowTick;
 
+        private int _pinnumber = 0;
+
         /// <summary>
         /// コンストラクタ
         /// </summary>
         public GpioPwm(int number)
         {
             _stopwatch = new Stopwatch();
+            _pinnumber = number;
+        }
 
+        public void Initialize()
+        {
             var gpio = GpioController.GetDefault();
-            if(null != gpio)
+            if (null != gpio)
             {
-                _pin = gpio.OpenPin(number);
+                _pin = gpio.OpenPin(_pinnumber);
+                _pin.ValueChanged += (sender, e) =>
+                {
+
+                };
                 _pin.Write(GpioPinValue.Low);
                 _pin.SetDriveMode(GpioPinDriveMode.Output);
             }
@@ -44,12 +54,23 @@ namespace ShimadzuGPIO
 
                 bool isHigh = false;
 
+                // スイッチが入っている間はずっと無限ループ
                 while (true)
                 {
                     // 間隔経過
-                    if (_current_interval <= _stopwatch.ElapsedMilliseconds)
+                    if(_current_interval < 0)
+                    {
+                        if(true == _stopwatch.IsRunning)
+                        {
+                            _stopwatch.Stop();
+                        }
+                    }
+                    else if (_current_interval <= _stopwatch.ElapsedMilliseconds)
                     {
                         _stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+                        // High
+                        WriteHigh();
 
                         HighTick(null, null);
                         isHigh = true;
@@ -58,17 +79,12 @@ namespace ShimadzuGPIO
                     {
                         if (true == isHigh)
                         {
+                            // Low
+                            WriteLow();
+
                             LowTick(null, null);
                             isHigh = false;
                         }
-                    }
-
-                    // Stop
-                    if(true == _isStop)
-                    {
-                        _isStop = false;
-                        _stopwatch.Stop();
-                        break;
                     }
                 }
 
@@ -77,6 +93,9 @@ namespace ShimadzuGPIO
             await task;
         }
 
-        private bool _isStop = false;
+        public override void Change(double t)
+        {
+            _current_interval = 1000;
+        }
     }
 }

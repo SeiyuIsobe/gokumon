@@ -10,7 +10,11 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         
         <StackPanel Orientation="Vertical" Margin="0,30,0,0">
-            <Button x:Name="button" Content="Button" HorizontalAlignment="Left" VerticalAlignment="Top" Click="button_Click"/>
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="button" Content="Button" HorizontalAlignment="Left" VerticalAlignment="Top" Click="button_Click"/>
+                <Button x:Name="_chgButton" Content="Change" HorizontalAlignment="Left" VerticalAlignment="Top" Click="_chgButton_Click"/>
+            </StackPanel>
+            
             <TextBlock Text="{Binding AccelerZ}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
             <Ellipse Fill="Aqua" Height="50" Width="50" x:Name="_ell"/>
             <CaptureElement x:Name="_camera" MaxWidth="160" MaxHeight="160" HorizontalAlignment="Center" VerticalAlignment="Center">
