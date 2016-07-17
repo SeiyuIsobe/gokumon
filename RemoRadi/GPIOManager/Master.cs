@@ -13,7 +13,7 @@ namespace ShimadzuGPIO
     public class Master
     {
         private const int LED_PIN = 5;
-        //private GpioPin _pin;
+        protected GpioPin _pin = null;
         //private GpioPinValue _pinvalue;
 
         public event EventHandler Tick;
@@ -96,7 +96,7 @@ namespace ShimadzuGPIO
         private event EventHandler HighTick;
         private event EventHandler LowTick;
 
-        public void Start()
+        public virtual void Start()
         {
             if(null == _worker)
             {
@@ -243,6 +243,24 @@ namespace ShimadzuGPIO
             if (null == pin) return;
 
             pin.Write(value);
+        }
+
+        protected void WritePin(GpioPinValue value)
+        {
+            if(_pin.Read() != value)
+            {
+                _pin.Write(value);
+            }
+        }
+
+        public void WriteHigh()
+        {
+            WritePin(GpioPinValue.High);
+        }
+
+        public void WriteLow()
+        {
+            WritePin(GpioPinValue.Low);
         }
     }
 }

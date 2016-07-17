@@ -168,5 +168,21 @@ namespace RemoChassis
             _pin5button.IsEnabled = true;
             _pin6button.IsEnabled = true;
         }
+
+        private GpioPwm _gpioPwmPin5 = null;
+
+        private void _pwmButton_Click(object sender, RoutedEventArgs e)
+        {
+            _gpioPwmPin5 = new GpioPwm(5);
+            _gpioPwmPin5.HighTick += (ss, ee) =>
+            {
+                _gpioPwmPin5.WriteHigh();
+            };
+            _gpioPwmPin5.LowTick += (ss, ee) =>
+            {
+                _gpioPwmPin5.WriteLow();
+            };
+            _gpioPwmPin5.Start();
+        }
     }
 }

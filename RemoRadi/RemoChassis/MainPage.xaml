@@ -29,6 +29,10 @@
                     <Button x:Name="_pin6button" Content="Low" HorizontalAlignment="Left" VerticalAlignment="Top" Click="_pin6button_Click" Margin="3,0,0,0" IsEnabled="False"/>
                 </StackPanel>
             </StackPanel>
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="GpioPwmドライブテスト"/>
+                <Button x:Name="_pwmButton" Content="button" HorizontalAlignment="Left" VerticalAlignment="Top" Click="_pwmButton_Click"/>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Page>
