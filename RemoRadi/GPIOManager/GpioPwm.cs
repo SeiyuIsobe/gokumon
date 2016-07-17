@@ -62,11 +62,21 @@ namespace ShimadzuGPIO
                             isHigh = false;
                         }
                     }
+
+                    // Stop
+                    if(true == _isStop)
+                    {
+                        _isStop = false;
+                        _stopwatch.Stop();
+                        break;
+                    }
                 }
 
             }));
 
             await task;
         }
+
+        private bool _isStop = false;
     }
 }

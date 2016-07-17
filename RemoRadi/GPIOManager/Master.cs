@@ -134,7 +134,7 @@ namespace ShimadzuGPIO
         
 
 
-        public void Stop()
+        public virtual void Stop()
         {
             _worker.CancelAsync();
             _worker.Dispose();
