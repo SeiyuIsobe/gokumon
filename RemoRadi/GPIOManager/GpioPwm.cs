@@ -11,7 +11,7 @@ namespace ShimadzuGPIO
     public class GpioPwm : Master
     {
         private Stopwatch _stopwatch = null;
-        private int _current_interval = 1000;
+        private int _current_interval = -1;
 
         public event EventHandler HighTick;
         public event EventHandler LowTick;
@@ -39,6 +39,8 @@ namespace ShimadzuGPIO
                 };
                 _pin.Write(GpioPinValue.Low);
                 _pin.SetDriveMode(GpioPinDriveMode.Output);
+
+                LowTick(null, null);
             }
             else
             {
@@ -93,9 +95,24 @@ namespace ShimadzuGPIO
             await task;
         }
 
+        private int _min_level = 1000; // パルス幅：1000ミリ秒
+        private int _max_level = 100; // パルス幅：100ミリ秒
+
         public override void Change(double t)
         {
-            _current_interval = 1000;
+            // 静止状態
+            if(_current_interval < 0)
+            {
+                _current_interval = _min_level;
+                _stopwatch.Start();
+                return;
+            }
+            else
+            {
+                // スピード変化はcosカーブに従う
+                double y = (_min_level - _max_level) * Math.Cos((Math.PI / 2.0) * t) + _max_level;
+                _current_interval = (int)y;
+            }
         }
     }
 }

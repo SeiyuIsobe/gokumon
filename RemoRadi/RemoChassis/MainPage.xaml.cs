@@ -10,6 +10,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Media.Capture;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -41,15 +42,16 @@ namespace RemoChassis
             this.DataContext = this;
         }
 
-        private void button_Click(object sender, RoutedEventArgs e)
+        private async void button_Click(object sender, RoutedEventArgs e)
         {
+            // 5番ピン
             _gpioPwmPin5 = new GpioPwm(5);
             _gpioPwmPin5.HighTick += async (ss, ee) =>
             {
                 await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
                     () =>
                     {
-                        _ell.Visibility = Visibility.Visible;
+                        _ell.Fill = new SolidColorBrush { Color = Colors.Aqua };
                     });
             };
             _gpioPwmPin5.LowTick += async (ss, ee) =>
@@ -57,55 +59,69 @@ namespace RemoChassis
                 await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
                     () =>
                     {
-                        _ell.Visibility = Visibility.Collapsed;
+                        _ell.Fill = new SolidColorBrush { Color = Colors.Silver };
                     });
             };
+
+            // 6番ピン
+            _gpioPwmPin6 = new GpioPwm(6);
 
             try
             {
                 _gpioPwmPin5.Initialize();
+                _gpioPwmPin6.Initialize();
                 
             }
             catch
-            { }
+            {
+                await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+                    () =>
+                    {
+                        _ell.Fill = new SolidColorBrush { Color = Colors.Silver };
+                    });
+            }
 
             _gpioPwmPin5.Start();
-
-
-            //if (null == _gpio)
-            //{
-            //    _gpio = new Master();
-            //    _gpio.Tick += async (ss, ee) =>
-            //    {
-            //        await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
-            //            () =>
-            //            {
-            //                if(null != ee)
-            //                {
-            //                    _ell.Visibility = Visibility.Visible;
-            //                }
-            //                else
-            //                {
-            //                    _ell.Visibility = Visibility.Collapsed;
-            //                }
-            //            });
-            //    };
-            //    _gpio.InitGPIO();
-            //}
 
             _iot = new AccelerIoT();
             _iot.WsUri = "ws://sukekiyo.mybluemix.net/ws/accera";
             _iot.PropertyChanged += async (ss, ee) =>
             {
                 //System.Diagnostics.Debug.WriteLine("-> " + _iot.Acceler.AcceraX.ToString());
-                
+
                 await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
                 () =>
                 {
                     this.AccelerX = _iot.Acceler.AcceraX;
-                    this.AccelerZ = _iot.Acceler.AcceraZ * -1.0;
+                    this.AccelerY = _iot.Acceler.AcceraY;
+                    this.AccelerZ = _iot.Acceler.AcceraZ;
 
-                    _gpio.Change(this.AccelerZ);
+                    double rightWheel = 0.0;
+                    double leftWheel = 0.0;
+
+                    // 右旋回(x < 0, y < 0)
+                    if (this.AccelerX < 0.0 && this.AccelerY < 0.0)
+                    {
+                        rightWheel = this.AccelerZAbs * (this.AccelerXAbs / (this.AccelerXAbs + this.AccelerYAbs));
+                        leftWheel = this.AccelerZAbs * (this.AccelerYAbs / (this.AccelerXAbs + this.AccelerYAbs));
+                    }
+
+                    // 左旋回(x < 0, y > 0)
+                    else if (this.AccelerX < 0.0 && this.AccelerY > 0.0)
+                    {
+                        rightWheel = this.AccelerZAbs * (this.AccelerYAbs / (this.AccelerXAbs + this.AccelerYAbs));
+                        leftWheel = this.AccelerZAbs * (this.AccelerXAbs / (this.AccelerXAbs + this.AccelerYAbs));
+                    }
+
+                    // 直進(x < 0, y = 0)
+                    else if (this.AccelerX < 0.0 && this.AccelerY == 0.0)
+                    {
+                        rightWheel = this.AccelerZAbs;
+                        leftWheel = this.AccelerZAbs;
+                    }
+
+                    // 駆動
+                    _gpioPwmPin5.Change(rightWheel);
                 });
             };
 
@@ -164,7 +180,39 @@ namespace RemoChassis
                 this.NotifyPropertyChanged();
             }
         }
+        
+        public double AccelerY
+        {
+            get
+            {
+                return _accelerY;
+            }
 
+            set
+            {
+                _accelerY = value;
+            }
+        }
+
+        public double AccelerXAbs
+        {
+            get { return Math.Abs(this.AccelerX); }
+        }
+
+        public double AccelerYAbs
+        {
+            get
+            {
+                return Math.Abs(this.AccelerY);
+            }
+        }
+
+        public double AccelerZAbs
+        {
+            get { return Math.Abs(this.AccelerZ); }
+        }
+
+        private double _accelerY = 0.0;
         private double _accelerZ = 0.0;
 
         private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
@@ -199,6 +247,7 @@ namespace RemoChassis
         }
 
         private GpioPwm _gpioPwmPin5 = null;
+        private GpioPwm _gpioPwmPin6 = null;
 
         private void _pwmButton_Click(object sender, RoutedEventArgs e)
         {
@@ -216,7 +265,8 @@ namespace RemoChassis
 
         private void _chgButton_Click(object sender, RoutedEventArgs e)
         {
-            _gpioPwmPin5.Change(-0.9);
+            double t = double.Parse(_changeValue.Text);
+            _gpioPwmPin5.Change(t);
         }
     }
 }

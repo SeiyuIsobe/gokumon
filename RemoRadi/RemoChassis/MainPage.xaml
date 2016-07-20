@@ -13,6 +13,8 @@
             <StackPanel Orientation="Horizontal">
                 <Button x:Name="button" Content="Button" HorizontalAlignment="Left" VerticalAlignment="Top" Click="button_Click"/>
                 <Button x:Name="_chgButton" Content="Change" HorizontalAlignment="Left" VerticalAlignment="Top" Click="_chgButton_Click"/>
+                <TextBox x:Name="_changeValue" Text="1.0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                <TextBlock Text="（0.0 ～ 1.0）" HorizontalAlignment="Left" VerticalAlignment="Top"/>
             </StackPanel>
             
             <TextBlock Text="{Binding AccelerZ}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
