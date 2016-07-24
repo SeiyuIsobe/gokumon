@@ -1,0 +1,39 @@
+﻿<Page
+    x:Class="BluePublisher.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BluePublisher"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" Margin="0,30,0,0">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="X Axis:" VerticalAlignment="Top" Width="80"/>
+                    <TextBlock x:Name="txtXAxis" Text="{Binding XAxis}" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Width="100"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Y Axis:" VerticalAlignment="Top" Width="80"/>
+                    <TextBlock x:Name="txtYAxis" Text="{Binding YAxis}" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Width="100"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Z Axis:" VerticalAlignment="Top" Width="80"/>
+                    <TextBlock x:Name="txtZAxis" Text="{Binding ZAxis}" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Width="100"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Latitude:" VerticalAlignment="Top" Width="80"/>
+                    <TextBlock x:Name="txtLatitude" Text="{Binding Latitude}" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Width="100"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Longitude:" VerticalAlignment="Top" Width="80"/>
+                    <TextBlock x:Name="txtLongitude" Text="{Binding Longitude}" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Width="100"/>
+                </StackPanel>
+                <Button x:Name="_connectBluemix" Click="_connectBluemix_Click">
+                    <TextBlock Text="接続" x:Name="_connectBluemixCaption"/>
+                </Button>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Page>
